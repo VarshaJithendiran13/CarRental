@@ -1,17 +1,16 @@
-﻿using RoadReady.Models;
+﻿using CarRental.Models;
+
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace RoadReady.Repository
+namespace CarRental.Repository
 {
-
     public interface IReviewRepository
     {
-        Task<List<Review>> GetByCarIdAsync(int carId);
-        Task<bool> AddAsync(Review review);
-        Task<bool> UpdateAsync(Review review);
-        Task<bool> DeleteAsync(int reviewId);
+        Task<IEnumerable<Review>> GetAllReviewsAsync();
+        Task<Review> GetReviewByIdAsync(int reviewId);
+        Task AddReviewAsync(Review review);
+        Task UpdateReviewAsync(Review review);
+        Task DeleteReviewAsync(int reviewId);
     }
-
 }
-

@@ -1,14 +1,17 @@
-﻿using RoadReady.Models;
+﻿using CarRental.Models;
 
-namespace RoadReady.Repository
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace CarRental.Repository
 {
     public interface IUserRepository
     {
-        Task<bool> AddAsync(User user);
-        Task<User> AuthenticateAsync(string email, string password);
-        Task<User> GetByIdAsync(int userId);
-        Task<bool> UpdateAsync(User user);
-        Task<bool> ResetPasswordAsync(string email, string newPassword);
+        Task<IEnumerable<User>> GetAllUsersAsync();
+        Task<User> GetUserByIdAsync(int userId);
+        Task AddUserAsync(User user);
+        Task UpdateUserAsync(User user);
+        Task DeleteUserAsync(int userId);
+        Task<User> GetUserByEmailAsync(string email);  // For login or authentication purposes
     }
-
 }

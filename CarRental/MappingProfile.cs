@@ -1,26 +1,27 @@
-﻿using CarRental.Models;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using AutoMapper;
+﻿using AutoMapper;
+using CarRental.Models;
+using CarRental.Models.DTOs;
+using CarRental.DTOs;// Assuming you have your DTOs defined here
 
 namespace CarRental
 {
-    public class MappingProfile 
+    public class MappingProfile : Profile
     {
         public MappingProfile()
         {
-            // User and UserDTO mapping
+            // Mapping for User
             CreateMap<User, UserDTO>().ReverseMap();
 
-            // Car and CarDTO mapping
+            // Mapping for Car
             CreateMap<Car, CarDTO>().ReverseMap();
 
-            // Reservation and ReservationDTO mapping
+            // Mapping for Reservation
             CreateMap<Reservation, ReservationDTO>().ReverseMap();
 
-            // Payment and PaymentDTO mapping
+            // Mapping for Payment
             CreateMap<Payment, PaymentDTO>().ReverseMap();
 
-            // Review and ReviewDTO mapping
+            // Mapping for Review
             CreateMap<Review, ReviewDTO>().ReverseMap();
         }
     }

@@ -1,17 +1,16 @@
-﻿using RoadReady.Models;
+﻿using CarRental.Models;
+
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace RoadReady.Repository
+namespace CarRental.Repository
 {
     public interface ICarRepository
     {
-        Task<List<Car>> GetAllAsync();
-        Task<Car> GetByIdAsync(int carId);
-        Task<List<Car>> SearchAsync(string make, string model, string location, decimal? maxPrice);
-        Task<bool> AddAsync(Car car);
-        Task<bool> UpdateAsync(Car car);
-        Task<bool> DeleteAsync(int carId);
+        Task<IEnumerable<Car>> GetAllCarsAsync();
+        Task<Car> GetCarByIdAsync(int carId);
+        Task AddCarAsync(Car car);
+        Task UpdateCarAsync(Car car);
+        Task DeleteCarAsync(int carId);
     }
-
 }

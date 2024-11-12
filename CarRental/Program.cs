@@ -1,15 +1,27 @@
 using CarRental.Repository;
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Configure Swagger/OpenAPI for API Documentation
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // Configure Swagger for API Documentation
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Car Rental API",
+        Version = "v1",
+        Description = "API for car rental system, including reservation and payment processing"
+    });
+});
 
-// Register repositories
+// Register repository services for Dependency Injection (DI)
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICarRepository, CarRepository>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
@@ -21,14 +33,21 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    // Enable Swagger only in Development Environment
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Car Rental API v1");
+        c.RoutePrefix = string.Empty; // This will set Swagger UI as the root
+    });
 }
 
-app.UseHttpsRedirection();
-app.UseRouting();  // Added this line to enable routing
-app.UseAuthorization();
+app.UseHttpsRedirection();  // Ensure HTTPS redirection for secure traffic
 
-app.MapControllers();
+// Add routing and authorization middleware
+app.UseRouting();
+app.UseAuthorization(); // If you are using authorization middleware (JWT, etc.)
 
-app.Run();
+app.MapControllers(); // Map API controllers
+
+app.Run(); // Start the application

@@ -1,12 +1,16 @@
-﻿using RoadReady.Models;
+﻿using CarRental.Models;
+
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace RoadReady.Repository
+namespace CarRental.Repository
 {
     public interface IPaymentRepository
     {
-        Task<bool> AddAsync(Payment payment);
-        Task<Payment> GetByReservationIdAsync(int reservationId);
-        Task<bool> UpdateStatusAsync(int paymentId, string status);
+        Task<IEnumerable<Payment>> GetAllPaymentsAsync();
+        Task<Payment> GetPaymentByIdAsync(int paymentId);
+        Task AddPaymentAsync(Payment payment);
+        Task UpdatePaymentAsync(Payment payment);
+        Task DeletePaymentAsync(int paymentId);
     }
 }

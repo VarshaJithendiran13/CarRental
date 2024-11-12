@@ -1,16 +1,18 @@
-﻿using RoadReady.Models;
+﻿using CarRental.Models;
+
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace RoadReady.Repository
+namespace CarRental.Repository
 {
     public interface IReservationRepository
     {
-        Task<List<Reservation>> GetByUserIdAsync(int userId);
-        Task<Reservation> GetByIdAsync(int reservationId);
-        Task<bool> AddAsync(Reservation reservation);
-        Task<bool> UpdateAsync(Reservation reservation);
-        Task<bool> DeleteAsync(int reservationId);
+        Task<IEnumerable<Reservation>> GetAllReservationsAsync();
+        Task<Reservation> GetReservationByIdAsync(int reservationId);
+        Task AddReservationAsync(Reservation reservation);
+        Task UpdateReservationAsync(Reservation reservation);
+        Task DeleteReservationAsync(int reservationId);
+        Task<IEnumerable<Reservation>> GetReservationsByUserIdAsync(int userId);
+        Task<IEnumerable<Reservation>> GetReservationsByCarIdAsync(int carId);
     }
-
 }
