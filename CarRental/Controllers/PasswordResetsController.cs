@@ -1,107 +1,154 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using CarRental.Models;
+using CarRental.Exceptions;
+using CarRental.Repository;
+using CarRental.Models.DTOs;
+using CarRental.Validations;
+using AutoMapper;
 
 namespace CarRental.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PasswordResetsController : ControllerBase
     {
-        private readonly YourDbContext _context;
+        private readonly IPasswordResetRepository _passwordResetRepository;
+        private readonly IMapper _mapper;
 
-        public PasswordResetsController(YourDbContext context)
+        public PasswordResetsController(IPasswordResetRepository passwordResetRepository, IMapper mapper)
         {
-            _context = context;
+            _passwordResetRepository = passwordResetRepository;
+            _mapper = mapper;
         }
 
         // GET: api/PasswordResets
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PasswordReset>>> GetPasswordResets()
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<IEnumerable<PasswordResetResponseDTO>>> GetPasswordResets()
         {
-            return await _context.PasswordResets.ToListAsync();
+            try
+            {
+                var passwordResets = await _passwordResetRepository.GetAllPasswordResetsAsync();
+                var passwordResetDtos = _mapper.Map<IEnumerable<PasswordResetResponseDTO>>(passwordResets);
+                return Ok(passwordResetDtos);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while retrieving the password resets.");
+            }
         }
 
         // GET: api/PasswordResets/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<PasswordReset>> GetPasswordReset(int id)
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<PasswordResetResponseDTO>> GetPasswordReset(int id)
         {
-            var passwordReset = await _context.PasswordResets.FindAsync(id);
-
-            if (passwordReset == null)
+            try
             {
-                return NotFound();
+                var passwordReset = await _passwordResetRepository.GetPasswordResetByIdAsync(id);
+                if (passwordReset == null)
+                {
+                    throw new NotFoundException($"Password reset with ID {id} not found.");
+                }
+                var passwordResetDto = _mapper.Map<PasswordResetResponseDTO>(passwordReset);
+                return Ok(passwordResetDto);
             }
-
-            return passwordReset;
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while retrieving the password reset.");
+            }
         }
 
         // PUT: api/PasswordResets/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPasswordReset(int id, PasswordReset passwordReset)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> PutPasswordReset(int id, PasswordResetDTO passwordResetDto)
         {
-            if (id != passwordReset.ResetId)
+            if (id != passwordResetDto.ResetId)
             {
-                return BadRequest();
+                return BadRequest("Password reset ID mismatch.");
             }
-
-            _context.Entry(passwordReset).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PasswordResetExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+                // Call the repository method directly with PasswordResetDTO
+                await _passwordResetRepository.UpdatePasswordResetAsync(id, passwordResetDto);
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while updating the password reset.");
+            }
         }
 
         // POST: api/PasswordResets
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<PasswordReset>> PostPasswordReset(PasswordReset passwordReset)
+        [AllowAnonymous]
+        public async Task<ActionResult<PasswordResetResponseDTO>> PostPasswordReset(PasswordResetRequestDTO passwordResetDto)
         {
-            _context.PasswordResets.Add(passwordReset);
-            await _context.SaveChangesAsync();
+            try
+            {
+                // Map the PasswordResetRequestDTO to PasswordResetDTO
+                var passwordResetDTO = _mapper.Map<PasswordResetDTO>(passwordResetDto);
 
-            return CreatedAtAction("GetPasswordReset", new { id = passwordReset.ResetId }, passwordReset);
+                // Call the repository method with the PasswordResetDTO
+                var createdPasswordReset = await _passwordResetRepository.AddPasswordResetAsync(passwordResetDTO);
+
+                // Map the created PasswordResetDTO to PasswordResetResponseDTO
+                var createdPasswordResetDto = _mapper.Map<PasswordResetResponseDTO>(createdPasswordReset);
+
+                // Return the response
+                return CreatedAtAction(nameof(GetPasswordReset), new { id = createdPasswordResetDto.ResetId }, createdPasswordResetDto);
+            }
+            catch (DuplicateResourceException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while creating the password reset.");
+            }
         }
 
         // DELETE: api/PasswordResets/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeletePasswordReset(int id)
         {
-            var passwordReset = await _context.PasswordResets.FindAsync(id);
-            if (passwordReset == null)
+            try
             {
-                return NotFound();
+                await _passwordResetRepository.DeletePasswordResetAsync(id);
+                return NoContent();
             }
-
-            _context.PasswordResets.Remove(passwordReset);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool PasswordResetExists(int id)
-        {
-            return _context.PasswordResets.Any(e => e.ResetId == id);
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while deleting the password reset.");
+            }
         }
     }
 }

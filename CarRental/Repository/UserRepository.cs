@@ -1,9 +1,7 @@
 ﻿using CarRental.Models;
-
+using CarRental.Exceptions;
 using Microsoft.EntityFrameworkCore;
-
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace CarRental.Repository
@@ -12,7 +10,6 @@ namespace CarRental.Repository
     {
         private readonly YourDbContext _context;
 
-        // Constructor to inject the DbContext
         public UserRepository(YourDbContext context)
         {
             _context = context;
@@ -21,53 +18,118 @@ namespace CarRental.Repository
         // Get all users
         public async Task<IEnumerable<User>> GetAllUsersAsync()
         {
-            return await _context.Users
-                .Include(u => u.Reservations)  // Optionally include related reservations
-                .Include(u => u.Reviews)  // Optionally include related reviews
-                .ToListAsync();
+            try
+            {
+                return await _context.Users.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception and throw a custom InternalServerException
+                throw new InternalServerException($"An error occurred while retrieving the users: {ex.Message}");
+            }
         }
 
-        // Get user by ID
+        // Get a user by ID
         public async Task<User> GetUserByIdAsync(int userId)
         {
-            return await _context.Users
-                .Include(u => u.Reservations)
-                .Include(u => u.Reviews)
+            var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
+                throw new NotFoundException($"User with ID {userId} not found.");
+
+            return user;
         }
 
         // Add a new user
         public async Task AddUserAsync(User user)
         {
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
-        }
+            if (user == null)
+                throw new ValidationException("User details cannot be null.");
 
-        // Update an existing user
-        public async Task UpdateUserAsync(User user)
-        {
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
-        }
+            // Check if user already exists by email (assuming email is unique)
+            var existingUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == user.Email);
 
-        // Delete a user
-        public async Task DeleteUserAsync(int userId)
-        {
-            var user = await _context.Users.FindAsync(userId);
-            if (user != null)
+            if (existingUser != null)
+                throw new DuplicateResourceException($"A user with email {user.Email} already exists.");
+
+            try
             {
-                _context.Users.Remove(user);
+                await _context.Users.AddAsync(user);
                 await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Catch database-related issues and rethrow as InternalServerException
+                throw new InternalServerException($"An error occurred while adding the user: {ex.Message}");
             }
         }
 
-        // Get user by email (useful for login or authentication)
+        // Update an existing user
+        public async Task UpdateUserAsync(User updatedUser)
+        {
+            if (updatedUser == null)
+                throw new ValidationException("Updated user details cannot be null.");
+
+            var existingUser = await _context.Users.FindAsync(updatedUser.UserId);
+
+            if (existingUser == null)
+                throw new NotFoundException($"User with ID {updatedUser.UserId} not found.");
+
+            // Update user details
+            existingUser.FirstName = updatedUser.FirstName;
+            existingUser.LastName = updatedUser.LastName;
+            existingUser.Email = updatedUser.Email;
+            existingUser.PhoneNumber = updatedUser.PhoneNumber;
+            existingUser.Role = updatedUser.Role;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new InternalServerException($"An error occurred while updating the user: {ex.Message}");
+            }
+        }
+
+        // Delete a user by ID
+        public async Task DeleteUserAsync(int userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+
+            if (user == null)
+                throw new NotFoundException($"User with ID {userId} not found.");
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+        }
+
+        // Get user by email (for login/authentication purposes)
         public async Task<User> GetUserByEmailAsync(string email)
         {
-            return await _context.Users
-                .Include(u => u.Reservations)
-                .Include(u => u.Reviews)
+            var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
+                throw new NotFoundException($"User with email {email} not found.");
+
+            return user;
+        }
+        public async Task<User?> ValidateUserAsync(string email, string password)
+        {
+            // Find the user by email
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            // Check if the user exists and if the password matches
+            if (user == null || user.Password != password)
+            {
+                return null; // Return null if credentials are invalid
+            }
+
+            // Return the user if valid
+            return user;
         }
     }
 }

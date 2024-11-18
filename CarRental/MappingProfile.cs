@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
+using CarRental.DTOs;
 using CarRental.Models;
 using CarRental.Models.DTOs;
-using CarRental.DTOs;// Assuming you have your DTOs defined here
 
 namespace CarRental
 {
@@ -11,18 +11,35 @@ namespace CarRental
         {
             // Mapping for User
             CreateMap<User, UserDTO>().ReverseMap();
+            CreateMap<User, UserLoginDTO>().ReverseMap();
+            CreateMap<User, UserRegistrationDTO>().ReverseMap();
+            CreateMap<User, UserUpdateDTO>().ReverseMap();
 
             // Mapping for Car
-            CreateMap<Car, CarDTO>().ReverseMap();
+            CreateMap<Car, CarCreateDTO>().ReverseMap();
+            CreateMap<Car, CarReadDTO>().ReverseMap();
+            CreateMap<Car, CarListDTO>().ReverseMap();
+            CreateMap<Car, CarUpdateDTO>().ReverseMap();
 
             // Mapping for Reservation
             CreateMap<Reservation, ReservationDTO>().ReverseMap();
 
             // Mapping for Payment
             CreateMap<Payment, PaymentDTO>().ReverseMap();
+            CreateMap<CreatePaymentDTO, Payment>();
 
             // Mapping for Review
             CreateMap<Review, ReviewDTO>().ReverseMap();
+
+            // Mapping for Admin Report
+            CreateMap<AdminReport, AdminReportCreateDTO>().ReverseMap();
+            CreateMap<AdminReport, AdminReportReadDTO>().ReverseMap();
+
+
+            // Mapping for Password Reset
+            CreateMap<PasswordReset, PasswordResetDTO>().ReverseMap();
+            CreateMap<PasswordReset, PasswordResetRequestDTO>().ReverseMap();
+            CreateMap<PasswordReset, PasswordResetResponseDTO>().ReverseMap();
         }
     }
 }
