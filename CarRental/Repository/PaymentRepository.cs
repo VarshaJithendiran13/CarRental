@@ -1,9 +1,7 @@
 ﻿using CarRental.Models;
-
+using CarRental.Exceptions;
 using Microsoft.EntityFrameworkCore;
-
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace CarRental.Repository
@@ -12,7 +10,6 @@ namespace CarRental.Repository
     {
         private readonly YourDbContext _context;
 
-        // Constructor that receives the DbContext via Dependency Injection
         public PaymentRepository(YourDbContext context)
         {
             _context = context;
@@ -21,39 +18,86 @@ namespace CarRental.Repository
         // Get all payments
         public async Task<IEnumerable<Payment>> GetAllPaymentsAsync()
         {
-            return await _context.Payments.ToListAsync();
+            try
+            {
+                return await _context.Payments.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception and throw a custom InternalServerException
+                throw new InternalServerException($"An error occurred while retrieving the payments: {ex.Message}");
+            }
         }
 
-        // Get payment by ID
+        // Get a payment by ID
         public async Task<Payment> GetPaymentByIdAsync(int paymentId)
         {
-            return await _context.Payments
-                              .FirstOrDefaultAsync(payment => payment.PaymentId == paymentId);
+            var payment = await _context.Payments
+                .FirstOrDefaultAsync(p => p.PaymentId == paymentId);
+
+            if (payment == null)
+                throw new NotFoundException($"Payment with ID {paymentId} not found.");
+
+            return payment;
         }
 
-        // Add new payment
+        // Add a new payment
         public async Task AddPaymentAsync(Payment payment)
         {
-            await _context.Payments.AddAsync(payment);
-            await _context.SaveChangesAsync();
+            if (payment == null)
+                throw new ValidationException("Payment details cannot be null.");
+
+            // You can add any additional validation for duplicate payments or specific business logic here
+
+            try
+            {
+                await _context.Payments.AddAsync(payment);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Catch database-related issues and rethrow as InternalServerException
+                throw new InternalServerException($"An error occurred while adding the payment: {ex.Message}");
+            }
         }
 
-        // Update existing payment
-        public async Task UpdatePaymentAsync(Payment payment)
+        // Update an existing payment
+        public async Task UpdatePaymentAsync(Payment updatedPayment)
         {
-            _context.Payments.Update(payment);
-            await _context.SaveChangesAsync();
+            if (updatedPayment == null)
+                throw new ValidationException("Updated payment details cannot be null.");
+
+            var existingPayment = await _context.Payments.FindAsync(updatedPayment.PaymentId);
+
+            if (existingPayment == null)
+                throw new NotFoundException($"Payment with ID {updatedPayment.PaymentId} not found.");
+
+            // Update payment details
+            existingPayment.Amount = updatedPayment.Amount;
+            existingPayment.PaymentDate = updatedPayment.PaymentDate;
+            existingPayment.PaymentMethod = updatedPayment.PaymentMethod;
+            existingPayment.Status = updatedPayment.Status;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new InternalServerException($"An error occurred while updating the payment: {ex.Message}");
+            }
         }
 
-        // Delete payment by ID
+        // Delete a payment by ID
         public async Task DeletePaymentAsync(int paymentId)
         {
             var payment = await _context.Payments.FindAsync(paymentId);
-            if (payment != null)
-            {
-                _context.Payments.Remove(payment);
-                await _context.SaveChangesAsync();
-            }
+
+            if (payment == null)
+                throw new NotFoundException($"Payment with ID {paymentId} not found.");
+
+            _context.Payments.Remove(payment);
+            await _context.SaveChangesAsync();
         }
     }
 }
