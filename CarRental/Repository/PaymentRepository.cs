@@ -99,5 +99,24 @@ namespace CarRental.Repository
             _context.Payments.Remove(payment);
             await _context.SaveChangesAsync();
         }
+        public async Task<IEnumerable<Payment>> GetPaymentsByReservationIdAsync(int reservationId)
+        {
+            try
+            {
+                var payments = await _context.Payments
+                    .Where(r => r.ReservationId == reservationId)
+                    .ToListAsync();
+
+                if (payments == null || payments.Count == 0)
+                    throw new NotFoundException($"No reservations found for car ID {reservationId}.");
+
+                return payments;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception and throw a custom InternalServerException
+                throw new InternalServerException($"An error occurred while retrieving the payments for car {reservationId}: {ex.Message}");
+            }
+        }
     }
 }

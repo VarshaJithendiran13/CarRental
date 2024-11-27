@@ -1,18 +1,19 @@
 ﻿using CarRental.Validations;
+
 using System.ComponentModel.DataAnnotations;
 
 namespace CarRental.DTOs
 {
-    public class ReservationDTO
+    public class CreateReservationDTO
     {
-        public int ReservationId { get; set; }
+       
 
         [Required(ErrorMessage = "UserId is required.")]
         public int UserId { get; set; }
 
         [Required(ErrorMessage = "CarId is required.")]
         public int CarId { get; set; }
-        
+
         [Required]
         [DataType(DataType.Date)]
         public DateTime PickupDate { get; set; }

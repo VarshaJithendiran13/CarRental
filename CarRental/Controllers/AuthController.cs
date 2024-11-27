@@ -23,7 +23,7 @@ namespace CarRental.Controllers
             _jwtTokenService = jwtTokenService;
         }
 
-        // POST: api/Auth/register
+        
         [HttpPost("register")]
         //Authorize(Roles = "Admin")] // Only Admins can register new users
         public async Task<IActionResult> Register([FromBody] UserRegistrationDTO userRegistrationDTO)

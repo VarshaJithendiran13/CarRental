@@ -65,13 +65,13 @@ public class ReservationController : ControllerBase
     // POST: api/Reservations
     [HttpPost]
     [Authorize(Roles = "User")] // Only Users can create their reservations
-    public async Task<IActionResult> AddReservation([FromBody] ReservationDTO reservationDTO)
+    public async Task<IActionResult> AddReservation([FromBody] CreateReservationDTO reservationDTO)
     {
         try
         {
             var reservation = _mapper.Map<Reservation>(reservationDTO); // Map from DTO to model
             await _reservationRepository.AddReservationAsync(reservation);
-            var createdReservationDTO = _mapper.Map<ReservationDTO>(reservation); // Map to DTO for response
+            var createdReservationDTO = _mapper.Map<CreateReservationDTO>(reservation); // Map to DTO for response
             return CreatedAtAction(nameof(GetReservationById), new { reservationId = reservation.ReservationId }, createdReservationDTO);
         }
         catch (ValidationException ex)
@@ -156,7 +156,7 @@ public class ReservationController : ControllerBase
 
     // GET: api/Reservations/car/{carId}
     [HttpGet("car/{carId}")]
-    [Authorize(Roles = "User, Admin")] // Allow both User and Admin to view reservations by car
+    [Authorize(Roles = "Host, Admin")] // Allow both User and Admin to view reservations by car
     public async Task<IActionResult> GetReservationsByCarId(int carId)
     {
         try

@@ -23,6 +23,7 @@ namespace CarRental
 
             // Mapping for Reservation
             CreateMap<Reservation, ReservationDTO>().ReverseMap();
+            CreateMap<Reservation, CreateReservationDTO>().ReverseMap();
 
             // Mapping for Payment
             CreateMap<Payment, PaymentDTO>().ReverseMap();
@@ -30,6 +31,7 @@ namespace CarRental
 
             // Mapping for Review
             CreateMap<Review, ReviewDTO>().ReverseMap();
+            CreateMap<Review, CreateReviewDTO>().ReverseMap();
 
             // Mapping for Admin Report
             CreateMap<AdminReport, AdminReportCreateDTO>().ReverseMap();

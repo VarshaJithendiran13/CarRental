@@ -7,12 +7,15 @@ using CarRental.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
+
 [ApiController]
 [Route("api/[controller]")]
 [Authorize] // Require authentication for all actions
 public class ReviewController : ControllerBase
 {
     private readonly IReviewRepository _reviewRepository;
+
+    private readonly ICarRepository _carRepository;
     private readonly IMapper _mapper;
 
     public ReviewController(IReviewRepository reviewRepository, IMapper mapper)
@@ -66,13 +69,13 @@ public class ReviewController : ControllerBase
     // POST: api/Reviews
     [HttpPost]
     [Authorize(Roles = "User")] // Only Users can add reviews
-    public async Task<IActionResult> AddReview([FromBody] ReviewDTO reviewDTO)
+    public async Task<IActionResult> AddReview([FromBody] CreateReviewDTO reviewDTO)
     {
         try
         {
             var review = _mapper.Map<Review>(reviewDTO); // Map from DTO to model
             await _reviewRepository.AddReviewAsync(review);
-            var createdReviewDTO = _mapper.Map<ReviewDTO>(review); // Map to DTO for response
+            var createdReviewDTO = _mapper.Map<CreateReviewDTO>(review); // Map to DTO for response
             return CreatedAtAction(nameof(GetReviewById), new { reviewId = review.ReviewId }, createdReviewDTO);
         }
         catch (ValidationException ex)
@@ -88,41 +91,16 @@ public class ReviewController : ControllerBase
             return StatusCode(500, ex.Message);
         }
     }
-
-    // PUT: api/Reviews
-    [HttpPut]
-    [Authorize(Roles = "User, Admin")] // Allow Users to update their own reviews and Admin to update any review
-    public async Task<IActionResult> UpdateReview([FromBody] ReviewDTO reviewDTO)
+    // Get reviews by Car ID
+    [HttpGet("car/{carId}")]
+    [Authorize(Roles = "Host, Admin")] // Allow both User and Admin to view reviews by car
+    public async Task<IActionResult> GetReviewByCarId(int carId)
     {
         try
         {
-            var review = _mapper.Map<Review>(reviewDTO); // Map from DTO to model
-            await _reviewRepository.UpdateReviewAsync(review);
-            return NoContent();
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (ValidationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (InternalServerException ex)
-        {
-            return StatusCode(500, ex.Message);
-        }
-    }
-
-    // DELETE: api/Reviews/{reviewId}
-    [HttpDelete("{reviewId}")]
-    [Authorize(Roles = "User, Admin")] // Allow Users to delete their own reviews and Admin to delete any review
-    public async Task<IActionResult> DeleteReview(int reviewId)
-    {
-        try
-        {
-            await _reviewRepository.DeleteReviewAsync(reviewId);
-            return NoContent();
+            var review = await _reviewRepository.GetReviewsByCarIdAsync(carId);
+            var reviewDTOs = _mapper.Map<IEnumerable<ReviewDTO>>(review); // Map to DTO
+            return Ok(reviewDTOs);
         }
         catch (NotFoundException ex)
         {
@@ -134,3 +112,74 @@ public class ReviewController : ControllerBase
         }
     }
 }
+
+        //// PUT: api/Reviews
+        //[HttpPut]
+        //[Authorize(Roles = "User, Admin")] // Allow Users to update their own reviews and Admin to update any review
+        //public async Task<IActionResult> UpdateReview([FromBody] ReviewDTO reviewDTO)
+        //{
+        //    try
+        //    {
+        //        var review = _mapper.Map<Review>(reviewDTO); // Map from DTO to model
+        //        await _reviewRepository.UpdateReviewAsync(review);
+        //        return NoContent();
+        //    }
+        //    catch (NotFoundException ex)
+        //    {
+        //        return NotFound(ex.Message);
+        //    }
+        //    catch (ValidationException ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //    catch (InternalServerException ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
+        //}
+
+        // DELETE: api/Reviews/{reviewId}
+        //[HttpDelete("{reviewId}")]
+        //[Authorize(Roles = "User, Admin")] // Allow Users to delete their own reviews and Admin to delete any review
+        //public async Task<IActionResult> DeleteReview(int reviewId)
+        //{
+        //    try
+        //    {
+        //        await _reviewRepository.DeleteReviewAsync(reviewId);
+        //        return NoContent();
+        //    }
+        //    catch (NotFoundException ex)
+        //    {
+        //        return NotFound(ex.Message);
+        //    }
+        //    catch (InternalServerException ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
+        //}
+    
+// GET: api/Reviews/{reviewId}
+//[HttpGet("{carId}")]
+//[Authorize(Roles = "User, Admin")] // Allow both User and Admin to get a specific review
+//public async Task<IActionResult> GetReviewById(int carId)
+//{
+//    try
+//    {
+//        var review = await _reviewRepository.GetReviewByIdAsync();
+//        if (review == null)
+//        {
+//            throw new NotFoundException("car not found");
+//        }
+//        var reviewDTO = _mapper.Map<ReviewDTO>(review); // Map to DTO
+//        return Ok(reviewDTO);
+//    }
+//    catch (NotFoundException ex)
+//    {
+//        return NotFound(ex.Message);
+//    }
+//    catch (InternalServerException ex)
+//    {
+//        return StatusCode(500, ex.Message);
+//    }
+ 
+   

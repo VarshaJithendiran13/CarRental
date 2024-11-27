@@ -9,6 +9,9 @@ namespace CarRental.Repository
     {
         Task<IEnumerable<Review>> GetAllReviewsAsync();
         Task<Review> GetReviewByIdAsync(int reviewId);
+        Task<IEnumerable<Review>> GetReviewsByCarIdAsync(int carId);
+
+
         Task AddReviewAsync(Review review);
         Task UpdateReviewAsync(Review review);
         Task DeleteReviewAsync(int reviewId);

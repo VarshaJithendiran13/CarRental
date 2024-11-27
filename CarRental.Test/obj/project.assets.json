@@ -8884,11 +8884,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\pc\\Pictures\\CarRental-test\\CarRental.Test\\CarRental.Test.csproj",
+      "projectUniqueName": "C:\\Users\\pc\\Documents\\GitHub\\CarRental\\CarRental.Test\\CarRental.Test.csproj",
       "projectName": "CarRental.Test",
-      "projectPath": "C:\\Users\\pc\\Pictures\\CarRental-test\\CarRental.Test\\CarRental.Test.csproj",
+      "projectPath": "C:\\Users\\pc\\Documents\\GitHub\\CarRental\\CarRental.Test\\CarRental.Test.csproj",
       "packagesPath": "C:\\Users\\pc\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\pc\\Pictures\\CarRental-test\\CarRental.Test\\obj\\",
+      "outputPath": "C:\\Users\\pc\\Documents\\GitHub\\CarRental\\CarRental.Test\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\pc\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -8906,8 +8906,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Users\\pc\\Pictures\\CarRental-test\\CarRental\\CarRental.csproj": {
-              "projectPath": "C:\\Users\\pc\\Pictures\\CarRental-test\\CarRental\\CarRental.csproj"
+            "C:\\Users\\pc\\Documents\\GitHub\\CarRental\\CarRental\\CarRental.csproj": {
+              "projectPath": "C:\\Users\\pc\\Documents\\GitHub\\CarRental\\CarRental\\CarRental.csproj"
             }
           }
         }

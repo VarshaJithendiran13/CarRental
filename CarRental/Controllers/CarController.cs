@@ -21,7 +21,8 @@ public class CarController : ControllerBase
     }
 
     [HttpGet]
-    [AllowAnonymous] // Make this endpoint publicly accessible if needed
+    [Authorize(Roles = "Admin,User")]
+    //[AllowAnonymous] // Make this endpoint publicly accessible if needed
     public async Task<IActionResult> GetAllCars()
     {
         try
@@ -37,6 +38,7 @@ public class CarController : ControllerBase
     }
 
     [HttpGet("{carId}")]
+    [Authorize(Roles = "Admin,Host")]
     public async Task<IActionResult> GetCarById(int carId)
     {
         try
@@ -56,7 +58,7 @@ public class CarController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin")] // Require Admin role for adding a car
+    [Authorize(Roles = "Admin,Host")] // Require Admin role for adding a car
     public async Task<IActionResult> AddCar([FromBody] CarCreateDTO carDto)
     {
         try
@@ -81,7 +83,7 @@ public class CarController : ControllerBase
     }
 
     [HttpPut]
-    [Authorize(Roles = "Admin")] // Require Admin role for updating a car
+    [Authorize(Roles = "Admin,Host")] // Require Admin role for updating a car
     public async Task<IActionResult> UpdateCar([FromBody] CarUpdateDTO carDto)
     {
         try
@@ -105,7 +107,7 @@ public class CarController : ControllerBase
     }
 
     [HttpDelete("{carId}")]
-    [Authorize(Roles = "Admin")] // Require Admin role for deleting a car
+    [Authorize(Roles = "Admin,Host")] // Require Admin role for deleting a car
     public async Task<IActionResult> DeleteCar(int carId)
     {
         try

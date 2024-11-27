@@ -85,54 +85,73 @@ public class PaymentController : ControllerBase
             return StatusCode(500, ex.Message);
         }
     }
-
-    // PUT: api/Payments/5
-    [HttpPut("{paymentId}")]
-    [Authorize(Roles = "Admin")] // Restrict payment updates to Admin role
-    public async Task<IActionResult> UpdatePayment(int paymentId, [FromBody] PaymentDTO paymentDTO)
+    [HttpGet("reservation/{reservationId}")]
+    [Authorize(Roles = "Host, Admin")] // Allow both User and Admin to view payments by car
+    public async Task<IActionResult> GetPaymentsByReservationId(int reservationId)
     {
         try
         {
-            if (paymentId != paymentDTO.PaymentId)
-            {
-                return BadRequest("Payment ID mismatch.");
-            }
-
-            var payment = _mapper.Map<Payment>(paymentDTO);
-            await _paymentRepository.UpdatePaymentAsync(payment);
-            return NoContent();
+            var payments = await _paymentRepository.GetPaymentsByReservationIdAsync(reservationId);
+            var paymentDTOs = _mapper.Map<IEnumerable<PaymentDTO>>(payments); // Map to DTO
+            return Ok(paymentDTOs);
         }
         catch (NotFoundException ex)
         {
-            return NotFound(ex.Message);
-        }
-        catch (ValidationException ex)
-        {
-            return BadRequest(ex.Message);
+            return NotFound(value: ex.Message);
         }
         catch (InternalServerException ex)
         {
             return StatusCode(500, ex.Message);
         }
     }
+
+    //// PUT: api/Payments/5
+    //[HttpPut("{paymentId}")]
+    //[Authorize(Roles = "Admin")] // Restrict payment updates to Admin role
+    //public async Task<IActionResult> UpdatePayment(int paymentId, [FromBody] PaymentDTO paymentDTO)
+    //{
+    //    try
+    //    {
+    //        if (paymentId != paymentDTO.PaymentId)
+    //        {
+    //            return BadRequest("Payment ID mismatch.");
+    //        }
+
+    //        var payment = _mapper.Map<Payment>(paymentDTO);
+    //        await _paymentRepository.UpdatePaymentAsync(payment);
+    //        return NoContent();
+    //    }
+    //    catch (NotFoundException ex)
+    //    {
+    //        return NotFound(ex.Message);
+    //    }
+    //    catch (ValidationException ex)
+    //    {
+    //        return BadRequest(ex.Message);
+    //    }
+    //    catch (InternalServerException ex)
+    //    {
+    //        return StatusCode(500, ex.Message);
+    //    }
+    //}
 
     // DELETE: api/Payments/5
-    [HttpDelete("{paymentId}")]
-    [Authorize(Roles = "Admin")] // Restrict payment deletion to Admin role
-    public async Task<IActionResult> DeletePayment(int paymentId)
-    {
-        try
-        {
-            await _paymentRepository.DeletePaymentAsync(paymentId);
-            return NoContent();
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
-        catch (InternalServerException ex)
-        {
-            return StatusCode(500, ex.Message);
-        }
-    }
+    //    [HttpDelete("{paymentId}")]
+    //    [Authorize(Roles = "Admin")] // Restrict payment deletion to Admin role
+    //    public async Task<IActionResult> DeletePayment(int paymentId)
+    //    {
+    //        try
+    //        {
+    //            await _paymentRepository.DeletePaymentAsync(paymentId);
+    //            return NoContent();
+    //        }
+    //        catch (NotFoundException ex)
+    //        {
+    //            return NotFound(ex.Message);
+    //        }
+    //        catch (InternalServerException ex)
+    //        {
+    //            return StatusCode(500, ex.Message);
+    //        }
+    //    }
 }

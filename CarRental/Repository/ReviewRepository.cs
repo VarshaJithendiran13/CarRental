@@ -103,5 +103,27 @@ namespace CarRental.Repository
             _context.Reviews.Remove(review);
             await _context.SaveChangesAsync();
         }
+        // Get reviews by car ID
+        public async Task<IEnumerable<Review>> GetReviewsByCarIdAsync(int carId)
+        {
+            try
+            {
+                var reviews = await _context.Reviews
+                    .Where(r => r.CarId == carId)
+                    .ToListAsync();
+
+                if (reviews == null || reviews.Count == 0)
+                    throw new NotFoundException($"No reviews found for car ID {carId}.");
+
+                return reviews;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception and throw a custom InternalServerException
+                throw new InternalServerException($"An error occurred while retrieving the review for car {carId}: {ex.Message}");
+            }
+        }
+
+        
     }
 }
