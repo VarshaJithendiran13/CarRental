@@ -42,6 +42,8 @@ namespace CarRental
             CreateMap<PasswordReset, PasswordResetDTO>().ReverseMap();
             CreateMap<PasswordReset, PasswordResetRequestDTO>().ReverseMap();
             CreateMap<PasswordReset, PasswordResetResponseDTO>().ReverseMap();
-        }
+            CreateMap<PasswordReset, PasswordResetConfirmDTO>().ReverseMap();
+            CreateMap<PasswordReset, PasswordResetVerifyDTO>().ReverseMap();
+                    }
     }
 }
